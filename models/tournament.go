@@ -22,6 +22,10 @@ type Tournament struct {
 	// `json:"status"` agar Frontend dapat object status lengkap, bukan hanya ID-nya
 	Status TournamentStatus `gorm:"foreignKey:StatusID" json:"status"`
 
+	// Relasi Many-to-Many: Turnamen bisa diikuti banyak Tim
+	// GORM menggunakan tabel pivot `tournament_teams` (sama dengan di Team)
+	Teams []Team `gorm:"many2many:tournament_teams;" json:"teams,omitempty"`
+
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
