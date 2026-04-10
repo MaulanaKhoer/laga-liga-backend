@@ -26,7 +26,8 @@ func SetupRoutes(r *gin.Engine) {
 
 		// Daftarkan routes per modul — tambah modul baru cukup 1 baris di sini
 		setupTournamentRoutes(protected)
-		// setupTeamRoutes(protected)   ← nanti kalau buat modul Team
-		// setupMatchRoutes(protected)  ← nanti kalau buat modul Match
+		setupTeamRoutes(protected)
+		setupMatchRoutes(protected) // ← Modul Match aktif!
+		setupMatchEventRoutes(protected) // ← Detail Gol & Kartu aktif!
 	}
 }
