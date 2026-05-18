@@ -1,4 +1,4 @@
-package seeders
+﻿package main
 
 import (
 	"fmt"
@@ -8,23 +8,25 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
-	"laga-liga-backend/models"
+	"github.com/joho/godotenv"
+	"laga-liga-backend/internal/config"
+	"laga-liga-backend/internal/models"
 )
 
 // SeedAll menjalankan semua seeder secara berurutan.
-// Aman dijalankan berulang kali — tidak akan duplikat data.
+// Aman dijalankan berulang kali â€” tidak akan duplikat data.
 func SeedAll(db *gorm.DB) {
-	log.Println("🌱 Mulai proses seeding database...")
-	seedTournamentStatuses(db) // ← Harus pertama! Tournament butuh status_id
+	log.Println("ðŸŒ± Mulai proses seeding database...")
+	seedTournamentStatuses(db) // â† Harus pertama! Tournament butuh status_id
 	seedUsers(db)
-	seedSports(db) // ← Sedikan kategori olahraga sebelum turnamen
+	seedSports(db) // â† Sedikan kategori olahraga sebelum turnamen
 	seedTournaments(db)
 	seedTeams(db)
 	seedPlayers(db)
-	seedTournamentTeams(db) // ← Daftarkan tim ke turnamen
-	seedMatches(db)         // ← Berikan jadwal pertandingan
-	seedMatchEvents(db)    // ← Detail gol dan kartu
-	log.Println("✅ Seeding selesai!")
+	seedTournamentTeams(db) // â† Daftarkan tim ke turnamen
+	seedMatches(db)         // â† Berikan jadwal pertandingan
+	seedMatchEvents(db)    // â† Detail gol dan kartu
+	log.Println("âœ… Seeding selesai!")
 }
 
 // seedTournamentStatuses mengisi tabel lookup status turnamen
@@ -40,13 +42,13 @@ func seedTournamentStatuses(db *gorm.DB) {
 		var count int64
 		db.Model(&models.TournamentStatus{}).Where("id = ?", s.ID).Count(&count)
 		if count > 0 {
-			fmt.Printf("   ⏭️  Status '%s' sudah ada, skip.\n", s.Name)
+			fmt.Printf("   â­ï¸  Status '%s' sudah ada, skip.\n", s.Name)
 			continue
 		}
 		if err := db.Create(&s).Error; err != nil {
-			log.Printf("   ❌ Gagal membuat status '%s': %v\n", s.Name, err)
+			log.Printf("   âŒ Gagal membuat status '%s': %v\n", s.Name, err)
 		} else {
-			fmt.Printf("   ✅ Status [%d] '%s' (%s) berhasil dibuat.\n", s.ID, s.Name, s.Label)
+			fmt.Printf("   âœ… Status [%d] '%s' (%s) berhasil dibuat.\n", s.ID, s.Name, s.Label)
 		}
 	}
 }
@@ -68,13 +70,13 @@ func seedUsers(db *gorm.DB) {
 		var count int64
 		db.Model(&models.User{}).Where("email = ?", u.Email).Count(&count)
 		if count > 0 {
-			fmt.Printf("   ⏭️  User '%s' sudah ada, skip.\n", u.Email)
+			fmt.Printf("   â­ï¸  User '%s' sudah ada, skip.\n", u.Email)
 			continue
 		}
 
 		hashed, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 		if err != nil {
-			log.Printf("   ❌ Gagal hash password untuk %s: %v\n", u.Email, err)
+			log.Printf("   âŒ Gagal hash password untuk %s: %v\n", u.Email, err)
 			continue
 		}
 
@@ -86,9 +88,9 @@ func seedUsers(db *gorm.DB) {
 		}
 
 		if err := db.Create(&user).Error; err != nil {
-			log.Printf("   ❌ Gagal membuat user %s: %v\n", u.Email, err)
+			log.Printf("   âŒ Gagal membuat user %s: %v\n", u.Email, err)
 		} else {
-			fmt.Printf("   ✅ User '%s' (%s) berhasil dibuat.\n", u.Name, u.Role)
+			fmt.Printf("   âœ… User '%s' (%s) berhasil dibuat.\n", u.Name, u.Role)
 		}
 	}
 }
@@ -113,7 +115,7 @@ func seedSports(db *gorm.DB) {
 	for _, s := range sports {
 		db.Create(&s)
 	}
-	log.Println("✅ Data Sports berhasil disemai!")
+	log.Println("âœ… Data Sports berhasil disemai!")
 }
 
 // 4. SEED TOURNAMENTS membuat data turnamen dummy
@@ -170,13 +172,13 @@ func seedTournaments(db *gorm.DB) {
 		var count int64
 		db.Model(&models.Tournament{}).Where("name = ?", t.Name).Count(&count)
 		if count > 0 {
-			fmt.Printf("   ⏭️  Turnamen '%s' sudah ada, skip.\n", t.Name)
+			fmt.Printf("   â­ï¸  Turnamen '%s' sudah ada, skip.\n", t.Name)
 			continue
 		}
 		if err := db.Create(&t).Error; err != nil {
-			log.Printf("   ❌ Gagal membuat turnamen '%s': %v\n", t.Name, err)
+			log.Printf("   âŒ Gagal membuat turnamen '%s': %v\n", t.Name, err)
 		} else {
-			fmt.Printf("   ✅ Turnamen '%s' (status_id: %d) berhasil dibuat.\n", t.Name, t.StatusID)
+			fmt.Printf("   âœ… Turnamen '%s' (status_id: %d) berhasil dibuat.\n", t.Name, t.StatusID)
 		}
 	}
 }
@@ -194,13 +196,13 @@ func seedTeams(db *gorm.DB) {
 		var count int64
 		db.Model(&models.Team{}).Where("name = ?", t.Name).Count(&count)
 		if count > 0 {
-			fmt.Printf("   ⏭️  Tim '%s' sudah ada, skip.\n", t.Name)
+			fmt.Printf("   â­ï¸  Tim '%s' sudah ada, skip.\n", t.Name)
 			continue
 		}
 		if err := db.Create(&t).Error; err != nil {
-			log.Printf("   ❌ Gagal membuat tim '%s': %v\n", t.Name, err)
+			log.Printf("   âŒ Gagal membuat tim '%s': %v\n", t.Name, err)
 		} else {
-			fmt.Printf("   ✅ Tim '%s' berhasil dibuat.\n", t.Name)
+			fmt.Printf("   âœ… Tim '%s' berhasil dibuat.\n", t.Name)
 		}
 	}
 }
@@ -211,7 +213,7 @@ func seedPlayers(db *gorm.DB) {
 	var teams []models.Team
 	db.Find(&teams)
 	if len(teams) == 0 {
-		log.Println("   ⚠️  Tidak ada tim, skip seed pemain.")
+		log.Println("   âš ï¸  Tidak ada tim, skip seed pemain.")
 		return
 	}
 
@@ -228,7 +230,7 @@ func seedPlayers(db *gorm.DB) {
 		var count int64
 		db.Model(&models.Player{}).Where("team_id = ?", team.ID).Count(&count)
 		if count > 0 {
-			fmt.Printf("   ⏭️  Pemain tim '%s' sudah ada, skip.\n", team.Name)
+			fmt.Printf("   â­ï¸  Pemain tim '%s' sudah ada, skip.\n", team.Name)
 			continue
 		}
 
@@ -241,7 +243,7 @@ func seedPlayers(db *gorm.DB) {
 			}
 			db.Create(&player)
 		}
-		fmt.Printf("   ✅ 3 pemain untuk tim '%s' berhasil dibuat.\n", team.Name)
+		fmt.Printf("   âœ… 3 pemain untuk tim '%s' berhasil dibuat.\n", team.Name)
 	}
 }
 
@@ -259,7 +261,7 @@ func seedTournamentTeams(db *gorm.DB) {
 	var count int64
 	db.Table("tournament_teams").Where("tournament_id = ?", tournament.ID).Count(&count)
 	if count > 0 {
-		fmt.Printf("   ⏭️  Tim sudah terdaftar di '%s', skip.\n", tournament.Name)
+		fmt.Printf("   â­ï¸  Tim sudah terdaftar di '%s', skip.\n", tournament.Name)
 		return
 	}
 
@@ -267,7 +269,7 @@ func seedTournamentTeams(db *gorm.DB) {
 	for _, team := range teams {
 		db.Model(&tournament).Association("Teams").Append(&team)
 	}
-	fmt.Printf("   ✅ %d tim berhasil didaftarkan ke '%s'.\n", len(teams), tournament.Name)
+	fmt.Printf("   âœ… %d tim berhasil didaftarkan ke '%s'.\n", len(teams), tournament.Name)
 }
 
 // seedMatches membuat data pertandingan dummy
@@ -321,7 +323,7 @@ func seedMatches(db *gorm.DB) {
 
 		db.Create(&m)
 	}
-	fmt.Println("   ✅ Data pertandingan dummy berhasil dibuat.")
+	fmt.Println("   âœ… Data pertandingan dummy berhasil dibuat.")
 }
 
 // seedMatchEvents mengisi detail gol untuk pertandingan yang sudah selesai
@@ -383,5 +385,12 @@ func seedMatchEvents(db *gorm.DB) {
 			db.Create(&event)
 		}
 	}
-	fmt.Println("   ✅ Detail kejadian pertandingan berhasil dibuat.")
+	fmt.Println("   âœ… Detail kejadian pertandingan berhasil dibuat.")
 }
+
+func main() {
+	godotenv.Load()
+	config.ConnectDatabase()
+	SeedAll(config.DB)
+}
+
