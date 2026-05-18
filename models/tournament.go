@@ -12,6 +12,11 @@ type Tournament struct {
 	StartDate   time.Time `json:"start_date"`
 	EndDate     time.Time `json:"end_date"`
 	MaxTeams    int       `gorm:"default:8" json:"max_teams"`
+	Format      string    `gorm:"type:varchar(50)" json:"format"`
+
+	// Foreign Key ke tabel sports
+	SportID uint  `json:"sport_id"`
+	Sport   Sport `gorm:"foreignKey:SportID" json:"sport"`
 
 	// Foreign Key ke tabel tournament_statuses
 	// `gorm:"default:1"` artinya status default adalah ID=1 (upcoming)

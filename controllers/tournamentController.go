@@ -45,8 +45,8 @@ func CreateTournament(c *gin.Context) {
 		return
 	}
 
-	// Setelah create, load ulang dengan relasi Status agar response lengkap
-	config.DB.Preload("Status").First(&input, input.ID)
+	// Setelah create, load ulang dengan relasi Status & Sport agar response lengkap
+	config.DB.Preload("Status").Preload("Sport").First(&input, input.ID)
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Turnamen berhasil dibuat!",
@@ -58,10 +58,8 @@ func CreateTournament(c *gin.Context) {
 func GetTournaments(c *gin.Context) {
 	var tournaments []models.Tournament
 
-	// Preload("Status") artinya: untuk setiap tournament,
-	// GORM otomatis JOIN ke tabel tournament_statuses dan isi field Status.
-	// Tanpa Preload, field Status akan kosong (zero value).
-	config.DB.Preload("Status").Find(&tournaments)
+	// Preload("Status") & Preload("Sport")
+	config.DB.Preload("Status").Preload("Sport").Find(&tournaments)
 
 	c.JSON(http.StatusOK, gin.H{"data": tournaments})
 }
@@ -71,7 +69,7 @@ func GetTournamentByID(c *gin.Context) {
 	var tournament models.Tournament
 	id := c.Param("id")
 
-	if err := config.DB.Preload("Status").First(&tournament, id).Error; err != nil {
+	if err := config.DB.Preload("Status").Preload("Sport").First(&tournament, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Turnamen tidak ditemukan!"})
 		return
 	}
@@ -98,8 +96,8 @@ func UpdateTournament(c *gin.Context) {
 
 	config.DB.Model(&tournament).Updates(input)
 
-	// Load ulang dengan relasi Status
-	config.DB.Preload("Status").First(&tournament, id)
+	// Load ulang dengan relasi Status & Sport
+	config.DB.Preload("Status").Preload("Sport").First(&tournament, id)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Data berhasil diupdate!", "data": tournament})
 }

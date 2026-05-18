@@ -32,6 +32,7 @@ func main() {
 	err = config.DB.AutoMigrate(
 		&models.User{},
 		&models.TournamentStatus{},
+		&models.Sport{},
 		&models.Tournament{},
 		&models.Team{},   // ← Team sebelum Player (Player punya FK ke Team)
 		&models.Player{}, // ← Player punya FK ke Team

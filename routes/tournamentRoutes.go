@@ -12,6 +12,7 @@ func setupTournamentRoutes(protected *gin.RouterGroup) {
 	// GET: semua user yang login boleh akses
 	protected.GET("/tournaments", controllers.GetTournaments)
 	protected.GET("/tournaments/:id", controllers.GetTournamentByID)
+	protected.GET("/sports", controllers.GetSports)
 
 	// POST, PUT, DELETE: hanya admin
 	protected.POST("/tournaments", middleware.RequireRole("admin"), controllers.CreateTournament)

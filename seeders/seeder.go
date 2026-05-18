@@ -17,6 +17,7 @@ func SeedAll(db *gorm.DB) {
 	log.Println("🌱 Mulai proses seeding database...")
 	seedTournamentStatuses(db) // ← Harus pertama! Tournament butuh status_id
 	seedUsers(db)
+	seedSports(db) // ← Sedikan kategori olahraga sebelum turnamen
 	seedTournaments(db)
 	seedTeams(db)
 	seedPlayers(db)
@@ -92,9 +93,43 @@ func seedUsers(db *gorm.DB) {
 	}
 }
 
-// seedTournaments membuat data turnamen dummy
-// StatusID mengacu ke tabel tournament_statuses
+// 3. SEED SPORTS
+func seedSports(db *gorm.DB) {
+	var count int64
+	db.Model(&models.Sport{}).Count(&count)
+	if count > 0 {
+		return // Sudah ada data
+	}
+
+	sports := []models.Sport{
+		{Name: "Sepak Bola", Description: "Pertandingan sepak bola 11 lawan 11"},
+		{Name: "Futsal", Description: "Pertandingan futsal 5 lawan 5 indoor"},
+		{Name: "Mini Soccer", Description: "Pertandingan sepak bola lapangan kecil 7 lawan 7"},
+		{Name: "Mobile Legends", Description: "Game MOBA populer Mobile Legends: Bang Bang"},
+		{Name: "Valorant", Description: "Tactical Shooter game dari Riot Games"},
+		{Name: "Catur", Description: "Permainan papan strategi"},
+	}
+
+	for _, s := range sports {
+		db.Create(&s)
+	}
+	log.Println("✅ Data Sports berhasil disemai!")
+}
+
+// 4. SEED TOURNAMENTS membuat data turnamen dummy
 func seedTournaments(db *gorm.DB) {
+	var count int64
+	db.Model(&models.Tournament{}).Count(&count)
+	if count > 0 {
+		return
+	}
+
+	// Ambil ID olahraga untuk relasi
+	var sepakBola, futsal, miniSoccer models.Sport
+	db.Where("name = ?", "Sepak Bola").First(&sepakBola)
+	db.Where("name = ?", "Futsal").First(&futsal)
+	db.Where("name = ?", "Mini Soccer").First(&miniSoccer)
+
 	tournaments := []models.Tournament{
 		{
 			Name:        "Piala Indonesia 2026",
@@ -103,6 +138,8 @@ func seedTournaments(db *gorm.DB) {
 			StartDate:   time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC),
 			EndDate:     time.Date(2026, 8, 31, 0, 0, 0, 0, time.UTC),
 			MaxTeams:    16,
+			SportID:     sepakBola.ID,
+			Format:      "Sistem Grup + Gugur",
 			StatusID:    1, // upcoming
 		},
 		{
@@ -112,6 +149,8 @@ func seedTournaments(db *gorm.DB) {
 			StartDate:   time.Date(2026, 4, 15, 0, 0, 0, 0, time.UTC),
 			EndDate:     time.Date(2026, 4, 30, 0, 0, 0, 0, time.UTC),
 			MaxTeams:    8,
+			SportID:     futsal.ID,
+			Format:      "Sistem Liga",
 			StatusID:    2, // ongoing
 		},
 		{
@@ -121,6 +160,8 @@ func seedTournaments(db *gorm.DB) {
 			StartDate:   time.Date(2026, 6, 10, 0, 0, 0, 0, time.UTC),
 			EndDate:     time.Date(2026, 6, 20, 0, 0, 0, 0, time.UTC),
 			MaxTeams:    12,
+			SportID:     miniSoccer.ID,
+			Format:      "Sistem Grup",
 			StatusID:    1, // upcoming
 		},
 	}
